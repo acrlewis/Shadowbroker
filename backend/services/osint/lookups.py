@@ -127,8 +127,12 @@ def lookup_dns(domain: str) -> dict[str, Any]:
 
 
 def lookup_whois(domain: str) -> dict[str, Any]:
+    domain = (domain or "").strip().lower()
     if not validate_domain(domain):
         raise ValueError("Invalid domain format")
+    host_check = validate_host(domain)
+    if not host_check.get("ok"):
+        raise ValueError(host_check.get("reason", "blocked domain"))
     results: dict[str, Any] = {"domain": domain, "timestamp": _now_iso()}
     rdap = _json_get(f"https://rdap.org/domain/{quote(domain)}", timeout=8)
     if isinstance(rdap, dict):
